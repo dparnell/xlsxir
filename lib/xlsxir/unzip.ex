@@ -114,13 +114,33 @@ defmodule Xlsxir.Unzip do
          iex> Xlsxir.Unzip.xml_file_list(0)
          ['xl/styles.xml', 'xl/sharedStrings.xml', 'xl/worksheets/sheet1.xml']
   """
-  def xml_file_list(index) do
+  def xml_file_list(index) when is_integer(index) do
     [
      'xl/styles.xml',
      'xl/sharedStrings.xml',
      'xl/worksheets/sheet#{index + 1}.xml'
     ]
   end
+
+  @doc """
+  List of files contained in the requested `.xlsx` file to be extracted.
+
+  ## Parameters
+
+  - `indexes` - indexes of the `.xlsx` worksheets to be parsed
+
+  ## Example
+
+         iex> Xlsxir.Unzip.xml_file_list([0, 2, 3])
+         ['xl/styles.xml', 'xl/sharedStrings.xml', 'xl/worksheets/sheet1.xml']
+  """
+  def xml_file_list(indexes) when is_list(indexes) do
+    [
+     'xl/styles.xml',
+     'xl/sharedStrings.xml'
+    ] ++ Enum.map(indexes, fn index -> 'xl/worksheets/sheet#{index + 1}.xml' end)
+  end
+
 
   @doc """
   Extracts requested list of files from a `.zip` file to `./temp` and returns a list of the extracted file paths.

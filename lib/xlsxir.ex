@@ -125,6 +125,33 @@ defmodule Xlsxir do
     end
   end
 
+  def extract_all(path) do
+    case Unzip.validate_path_all_indexes(path) do
+      {:ok, indexes} ->
+        Unzip.xml_file_list(indexes)
+        |> Unzip.extract_xml_to_file(path)
+        |> case do
+             {:ok, file_paths} ->
+               result = Enum.map(file_paths, fn file ->
+                 case file do
+                   'temp/xl/sharedStrings.xml' ->
+                     SaxParser.parse(to_string(file), :string)
+                     nil
+                   'temp/xl/styles.xml' ->
+                     SaxParser.parse(to_string(file), :style)
+                     nil
+                   _ -> SaxParser.parse(file, :multi)
+                 end
+               end) |> Enum.reject(&is_nil/1)
+               Unzip.delete_dir
+
+               result
+             error -> error
+           end
+      error -> error
+    end
+  end
+
   defp do_multi_extract(file_paths, index, timer) do
       Enum.each(file_paths, fn file ->
       case file do
